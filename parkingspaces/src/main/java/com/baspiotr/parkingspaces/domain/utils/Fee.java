@@ -2,43 +2,50 @@ package com.baspiotr.parkingspaces.domain.utils;
 
 import com.baspiotr.parkingspaces.domain.model.Role;
 
+import java.math.BigDecimal;
+
 public class Fee {
 
-    private static double feeRegular(double n) {
-        if (n == 0)
-            return 1;
-        else
-            return (2 * feeRegular(n - 1));
+    protected static BigDecimal calculateFactorialRegularFee(BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ONE;
+        } else {
+            BigDecimal regularFeeMultiplier = new BigDecimal(2);
+            return regularFeeMultiplier.multiply(calculateFactorialRegularFee(amount.subtract(BigDecimal.ONE)));
+        }
     }
 
-    private static double feeVIP(double n) {
-        if (n == 0)
-            return 1;
-        else
-            return (1.5 * feeVIP(n - 1));
+    protected static BigDecimal calculateFactorialVIPFee(BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ONE;
+        } else {
+            BigDecimal multiplier = new BigDecimal(1.5);
+            return multiplier.multiply(calculateFactorialVIPFee(amount.subtract(BigDecimal.ONE)));
+        }
     }
 
-    public static double calculateFee(Role role, double hours) {
+    public static BigDecimal calculateFee(Role role, BigDecimal hours) {
 
-        double sum = 3;
+
+        BigDecimal sum = new BigDecimal(-1);
+
+        System.out.println("Hours = " + hours.toString());
 
         if (role.equals(Role.DRIVER_REGULAR)) {
-            if (hours <= 1) {
-                return 1;
-            } else if (hours == 2) {
-                return 3;
+            if (hours.intValue() <= 1) {
+                return new BigDecimal(1);
+            } else if (hours.intValue() == 2) {
+                return new BigDecimal(3);
             }
-            sum += feeRegular(hours);
+            sum = sum.add(calculateFactorialRegularFee(hours));
         } else if (role.equals(Role.DRIVER_VIP)) {
-            if (hours <= 1) {
-                return 0;
-            } else if (hours == 2) {
-                return 3;
+            if (hours.intValue() <= 1) {
+                return new BigDecimal(0);
+            } else if (hours.intValue() == 2) {
+                return new BigDecimal(2);
             }
-            sum += feeVIP(hours);
+            sum = sum.add(calculateFactorialVIPFee(hours));
         }
-
         return sum;
     }
-
 }

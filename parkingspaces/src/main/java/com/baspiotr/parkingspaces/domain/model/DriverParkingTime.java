@@ -7,27 +7,32 @@ import java.time.temporal.ChronoUnit;
 @Embeddable
 public class DriverParkingTime {
 
-    private LocalDateTime start;
-    protected LocalDateTime end;
+    private LocalDateTime startTime;
+    protected LocalDateTime endTime;
 
-    public void startTime() {
-        this.start = LocalDateTime.now();
+    public void start() {
+        this.startTime = LocalDateTime.now();
     }
 
-    public void endTime() {
-        this.end = LocalDateTime.now();
+    public void end() {
+        this.endTime = LocalDateTime.now();
     }
 
     public long getHours() {
-        if (end == null) {
-            endTime();
+        if (endTime == null) {
+            end();
         }
-        long hours = ChronoUnit.HOURS.between(start, end);
+
+        if (startTime == null) {
+            throw new RuntimeException();
+        }
+
+        long hours = ChronoUnit.HOURS.between(startTime, endTime);
         return hours;
     }
 
     public boolean isStarted() {
-        return (start == null) ? false : true;
+        return (startTime == null) ? false : true;
     }
 
 }

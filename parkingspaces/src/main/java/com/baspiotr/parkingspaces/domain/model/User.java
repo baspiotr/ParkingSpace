@@ -25,7 +25,6 @@ public class User {
     @Embedded
     private DriverParkingTime driverParkingTime;
 
-    @NotBlank
     private Role role;
 
     @OneToOne(cascade = CascadeType.MERGE)
