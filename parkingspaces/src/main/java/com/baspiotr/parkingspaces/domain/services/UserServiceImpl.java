@@ -1,6 +1,6 @@
 package com.baspiotr.parkingspaces.domain.services;
 
-import com.baspiotr.parkingspaces.domain.model.Parking;
+import com.baspiotr.parkingspaces.domain.model.Role;
 import com.baspiotr.parkingspaces.domain.model.User;
 import com.baspiotr.parkingspaces.domain.repository.ParkingRepository;
 import com.baspiotr.parkingspaces.domain.repository.UserRepository;
@@ -9,16 +9,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Service
+@Transactional
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class UserServiceImpl implements UserService {
 
-    private final ParkingRepository parkingRepository;
     private final UserRepository userRepository;
-
-    //todo 1) As a driver, I want to start the parking meter, so I don’t have to pay the fine for the invalid parking.
 
     public boolean startParkingMeter(int userId) {
 
@@ -28,18 +28,10 @@ public class UserServiceImpl implements UserService {
             return false;
         }
 
-        Parking parking = parkingRepository.findAll().get(0);
-
-        user.getDriverParkingTime().start();
-
-        if (!parking.getDrivers().contains(user)) {
-            parking.getDrivers().add(user);
-        }
+        user.setStartTime(LocalDateTime.now());
 
         return true;
     }
-
-    //todo 3) As a driver, I want to stop the parking meter, so that I pay only for the actual parking time
 
     public boolean stopParkingMeter(int userId) {
 
@@ -47,32 +39,49 @@ public class UserServiceImpl implements UserService {
 
         if (user == null) {
             return false;
-        } else if (user.getDriverParkingTime().isStarted() == false) {
-            return false;
+        } else if (user.getStartTime() == null) {
+            user.setStartTime(LocalDateTime.now());
         }
 
-        user.getDriverParkingTime().end();
+        user.setEndTime(LocalDateTime.now());
 
         return true;
     }
 
-    //todo 4) As a driver, I want to know how much I have to pay for parking.
-
-    public String getFeeFor(int userId) {
+    public BigDecimal fee(int userId) {
 
         User user = userRepository.findOne(userId);
 
         if (user == null) {
-            throw new RuntimeException();
+           new RuntimeException();
         }
 
-        long hours = user.getDriverParkingTime().getHours();
+        long hours = user.getHours();
+        BigDecimal feeAmount = Fee.calculateFee(user.getRole(), (int) hours);
 
-        BigDecimal feeAmount = Fee.calculateFee(user.getRole(), new BigDecimal(hours));
-
-        String result = "Opłata dla użytkownika o id: " + userId + " wynosi: " + feeAmount.toString();
-
-        return result;
+        return feeAmount;
     }
 
+    @Override
+    public boolean isTimerStartedForUser(int userId) {
+        User user = userRepository.findOne(userId);
+        return (user.getStartTime() == null) ? false : true;
+    }
+
+    public BigDecimal allDayEarnings() {
+
+        BigDecimal feeAmount = new BigDecimal(0);
+
+        for (Object user : userRepository.findAll().toArray()) {
+            if (user instanceof User) {
+                User castUser = (User) user;
+                if (castUser.getRole().equals(Role.DRIVER_REGULAR) || castUser.getRole().equals(Role.DRIVER_VIP)) {
+                    long hours = castUser.getHours();
+                    feeAmount = feeAmount.add(Fee.calculateFee(castUser.getRole(), (int) hours));
+                }
+            }
+        }
+
+        return feeAmount;
+    }
 }

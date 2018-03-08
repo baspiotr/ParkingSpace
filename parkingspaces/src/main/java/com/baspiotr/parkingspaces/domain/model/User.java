@@ -4,6 +4,9 @@ import lombok.*;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 @Table
@@ -22,19 +25,47 @@ public class User {
     @NotBlank
     private String lastName;
 
-    @Embedded
-    private DriverParkingTime driverParkingTime;
-
     private Role role;
 
-    @OneToOne(cascade = CascadeType.MERGE)
     @Setter
-    private Parking parking;
+    private LocalDateTime startTime;
+
+    @Setter
+    private LocalDateTime endTime;
 
     @Builder
     User(String firstName, String lastName, Role role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.role = role;
+    }
+
+    public long getHours() {
+        if (endTime == null) {
+            endTime = LocalDateTime.now();
+        }
+
+        if (startTime == null) {
+            startTime = LocalDateTime.now();
+        }
+
+
+        System.out.println("GetHours counted from "+startTime+"   "+endTime);
+
+
+        long hours = ChronoUnit.HOURS.between(startTime, endTime);
+        return hours;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", role=" + role +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                '}';
     }
 }

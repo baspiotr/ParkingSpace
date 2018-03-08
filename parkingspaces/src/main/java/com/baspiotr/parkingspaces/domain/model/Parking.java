@@ -4,6 +4,8 @@ import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -17,10 +19,11 @@ public class Parking {
     @Setter(AccessLevel.NONE)
     private Integer id;
 
-    @OneToMany(mappedBy = "parking", cascade = CascadeType.MERGE)
-    private List<User> drivers;
+    @Setter
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<User> drivers = new ArrayList<>();
 
-    @OneToOne(cascade = CascadeType.MERGE)
+    @OneToOne
     @NotNull
     private User operator;
 
@@ -34,4 +37,13 @@ public class Parking {
         this.owner = owner;
     }
 
+    @Override
+    public String toString() {
+        return "Parking{" +
+                "id=" + id +
+                ", drivers=" + drivers +
+                ", operator=" + operator +
+                ", owner=" + owner +
+                '}';
+    }
 }

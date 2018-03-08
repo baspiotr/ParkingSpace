@@ -1,12 +1,14 @@
 package com.baspiotr.parkingspaces.controllers;
 
 import com.baspiotr.parkingspaces.domain.services.UserService;
-import com.baspiotr.parkingspaces.domain.services.UserServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
+
+@Transactional
 @RestController
 @RequestMapping("/parking")
 @AllArgsConstructor(onConstructor = @__(@Autowired))
@@ -14,22 +16,29 @@ public class ParkingMeterController {
 
     final UserService userService;
 
-    @RequestMapping(value = "/start", method = RequestMethod.POST)
+    @PostMapping(value = "/start")
     public HttpStatus start(@RequestParam(value = "userId") int userId) {
-
-        System.out.println("jestem w start");
-
         return userService.startParkingMeter(userId) ? HttpStatus.OK : HttpStatus.FORBIDDEN;
     }
 
-    @RequestMapping("/stop")
+    @PostMapping("/stop")
     public HttpStatus stop(@RequestParam(value = "userId") int userId) {
         return userService.stopParkingMeter(userId) ? HttpStatus.OK : HttpStatus.FORBIDDEN;
     }
 
-    @RequestMapping("/money")
+    @GetMapping("/money")
     public String userMoney(@RequestParam(value = "userId") int userId) {
-        return userService.getFeeFor(userId);
+        return userService.fee(userId).toString();
+    }
+
+    @GetMapping("/isTimerStarted")
+    public Boolean isTimerStarted(@RequestParam(value = "userId") int userId) {
+        return userService.isTimerStartedForUser(userId);
+    }
+
+    @GetMapping("/allMoney")
+    public String money() {
+        return userService.allDayEarnings().toString();
     }
 
 }

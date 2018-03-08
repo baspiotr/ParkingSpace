@@ -1,101 +1,87 @@
 package com.baspiotr.parkingspaces.controllers;
 
+import com.baspiotr.parkingspaces.ParkingspacesApplication;
 import com.baspiotr.parkingspaces.domain.model.Parking;
-import com.baspiotr.parkingspaces.domain.model.Role;
 import com.baspiotr.parkingspaces.domain.model.User;
 import com.baspiotr.parkingspaces.domain.repository.ParkingRepository;
 import com.baspiotr.parkingspaces.domain.repository.UserRepository;
 import junit.framework.TestCase;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.annotation.Resource;
 import javax.transaction.Transactional;
-import java.util.Arrays;
 
+import java.time.LocalDateTime;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@Transactional
+@SpringBootTest(classes = ParkingspacesApplication.class)
 @PropertySource("application.properties")
-public class ParkingMeterControllerTest {
+@Slf4j
+@Transactional
+public class ParkingMeterControllerTest extends TestCase {
 
-    @Resource
+    @Autowired
     private UserRepository userRepository;
-
-    @Resource
-    private ParkingRepository parkingRepository;
-
+    
     @Autowired
     private WebApplicationContext context;
 
-
     private MockMvc mockMvc;
-
-    ParkingMeterController parkingMeterController;
 
     @Before
     public void setUp() {
-        User driver = User.builder().firstName("Piotr").lastName("Basinski").role(Role.DRIVER_REGULAR).build();
-        User operator = User.builder().firstName("Jan").lastName("Kowalski").role(Role.OPERATOR).build();
-        User owner = User.builder().firstName("Forest").lastName("Gryn").role(Role.OWNER).build();
-
-        Parking parking = Parking.builder().operator(operator).owner(owner).build();
-
-        userRepository.save(Arrays.asList(driver, operator, owner));
-        userRepository.flush();
-
-        parkingRepository.save(parking);
-        parkingRepository.flush();
-
         MockitoAnnotations.initMocks(this);
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .build();
-
-    }
-
-    @Test
-    public void test() {
-
-
-        System.out.println(userRepository.findAll().toArray().toString());
-
-
     }
 
     @Test
     public void startTest() throws Exception {
-//        mockMvc.perform(post("/start"))
-//                .andExpect(status().isOk());
-
-
-        mockMvc.perform(post("/parking/start?userId=1"));
-
+        log.info(mockMvc.perform(post("/parking/start?userId=1")).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
     }
 
-    public void stopTest() {
-
+    @Test
+    public void stopTest() throws Exception {
+        log.info(mockMvc.perform(post("/parking/stop?userId=1")).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
     }
 
-    public void moneyTest() {
-
+    @Test
+    public void userMoneyTest() throws Exception {
+        User user = userRepository.findOne(1);
+        user.setStartTime(LocalDateTime.now());
+        user.setEndTime(LocalDateTime.now().plusHours(7));
+        log.info(mockMvc.perform(get("/parking/money?userId=1")).andExpect(status().isOk()).andExpect(content().string("127")).andReturn().getResponse().getContentAsString());
     }
 
-    public void isDriverStartMeter() {
+    @Test
+    public void isTimerStarted() throws  Exception {
+        log.info(mockMvc.perform(get("/parking/isTimerStarted?userId=1")).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+    }
 
+    @Test
+    public void moneyTest() throws Exception {
+        User user = userRepository.findOne(1);
+        user.setStartTime(LocalDateTime.now());
+        user.setEndTime(LocalDateTime.now().plusHours(7));
+        log.info(mockMvc.perform(get("/parking/allMoney")).andExpect(status().isOk()).andExpect(content().string("127")).andReturn().getResponse().getContentAsString());
     }
 
 }

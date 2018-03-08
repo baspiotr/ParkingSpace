@@ -1,5 +1,7 @@
 package com.baspiotr.parkingspaces.domain.model;
 
-public enum Role {
+import java.io.Serializable;
+
+public enum Role  {
     DRIVER_REGULAR, DRIVER_VIP, OPERATOR, OWNER
 }
