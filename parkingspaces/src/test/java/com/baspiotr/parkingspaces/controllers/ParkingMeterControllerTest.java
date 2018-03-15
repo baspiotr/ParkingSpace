@@ -1,9 +1,7 @@
 package com.baspiotr.parkingspaces.controllers;
 
 import com.baspiotr.parkingspaces.ParkingspacesApplication;
-import com.baspiotr.parkingspaces.domain.model.Parking;
 import com.baspiotr.parkingspaces.domain.model.User;
-import com.baspiotr.parkingspaces.domain.repository.ParkingRepository;
 import com.baspiotr.parkingspaces.domain.repository.UserRepository;
 import junit.framework.TestCase;
 import lombok.extern.slf4j.Slf4j;
@@ -16,13 +14,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.annotation.Resource;
 import javax.transaction.Transactional;
-
 import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -39,7 +34,7 @@ public class ParkingMeterControllerTest extends TestCase {
 
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private WebApplicationContext context;
 
